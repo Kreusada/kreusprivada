@@ -8,6 +8,7 @@ from redbot.core.utils.predicates import ReactionPredicate
 
 mod = "\N{OPEN MAILBOX WITH RAISED FLAG}\N{VARIATION SELECTOR-16}"
 
+
 class ModMail(commands.Cog):
     """
     An interactive global modmail cog.
@@ -19,7 +20,9 @@ class ModMail(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, 3280947324, force_registration=True)
-        self.config.register_global(server=None, chan=None, toggle=True, blacklist=[], mods=[])
+        self.config.register_global(
+            server=None, chan=None, toggle=True, blacklist=[], mods=[]
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -32,7 +35,9 @@ class ModMail(commands.Cog):
         return
 
     async def clear_blacklist(self, ctx: commands.Context):
-        msg = await ctx.send(f"Please confirm that you want to clear the *entire* blacklist.")
+        msg = await ctx.send(
+            f"Please confirm that you want to clear the *entire* blacklist."
+        )
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         try:
@@ -45,7 +50,9 @@ class ModMail(commands.Cog):
             await ctx.send("Blacklist cleared.")
 
     async def pred(self, ctx: commands.Context, message: str):
-        msg = await ctx.send(f"Please confirm that you want to send the following message: {box(message, lang='md')}")
+        msg = await ctx.send(
+            f"Please confirm that you want to send the following message: {box(message, lang='md')}"
+        )
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         try:
@@ -82,11 +89,8 @@ class ModMail(commands.Cog):
         chan = self.bot.get_channel(await self.config.chan())
         tog = await self.config.toggle()
         embed = discord.Embed(
-            description=(
-                f"**Channel:** {chan.mention}\n"
-                f"**Enabled:** {tog}"
-            ),
-            colour=await ctx.embed_colour()
+            description=(f"**Channel:** {chan.mention}\n" f"**Enabled:** {tog}"),
+            colour=await ctx.embed_colour(),
         )
         await ctx.send(embed=embed)
 
@@ -94,19 +98,21 @@ class ModMail(commands.Cog):
     async def reply(self, ctx, user: discord.User, *, message: str):
         """Reply to a user."""
         if not str(ctx.author) in await self.config.mods():
-            await ctx.send(error(text='You are not authorized to use this command.'))
+            await ctx.send(error(text="You are not authorized to use this command."))
         else:
             if await ctx.embed_requested():
                 embed = discord.Embed(
                     title=f"{mod} Reply from {bold(ctx.author.name)}!",
                     description=message,
                     colour=await ctx.embed_colour(),
-                    timestamp=ctx.message.created_at
+                    timestamp=ctx.message.created_at,
                 )
                 embed.set_footer(text=f"You recently used ModMail with {ctx.me}.")
                 try:
                     await user.send(embed=embed)
-                    await ctx.send(f"{mod} mail has been flown back to {user.name} successfully.")
+                    await ctx.send(
+                        f"{mod} mail has been flown back to {user.name} successfully."
+                    )
                 except discord.Forbidden:
                     await ctx.send(f"{user.name} could not be DMed.")
             else:
@@ -153,11 +159,11 @@ class ModMail(commands.Cog):
                 embed = discord.Embed(
                     title=f"{mod} ModMail Correspondents",
                     description=description,
-                    colour=await ctx.embed_colour()
+                    colour=await ctx.embed_colour(),
                 )
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(box(description, lang='md'))
+                await ctx.send(box(description, lang="md"))
 
     @modmail.group()
     async def blacklist(self, ctx):
@@ -199,11 +205,11 @@ class ModMail(commands.Cog):
                 embed = discord.Embed(
                     title=f"{mod} ModMail Blacklist",
                     description=description,
-                    colour=await ctx.embed_colour()
+                    colour=await ctx.embed_colour(),
                 )
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(box(description, lang='md'))
+                await ctx.send(box(description, lang="md"))
 
     @blacklist.command()
     @commands.is_owner()
@@ -223,9 +229,13 @@ class ModMail(commands.Cog):
         if not await self.config.toggle():
             return
         if str(message.author) in await self.config.blacklist():
-            return await ctx.send(error(text='You have been blacklisted from using our ModMail.'))
+            return await ctx.send(
+                error(text="You have been blacklisted from using our ModMail.")
+            )
         if len(message.content) > 1500:
-            return await message.channel.send(f"Sorry {message.author}! Your message must be under 1500 characters.")
+            return await message.channel.send(
+                f"Sorry {message.author}! Your message must be under 1500 characters."
+            )
         channel = self.bot.get_channel(await self.config.chan())
         pred = await self.pred(ctx, message.content)
         if pred:
@@ -235,7 +245,9 @@ class ModMail(commands.Cog):
                 title=f"{mod} Message received from {bold(message.author.name)}!",
                 description=(f"{bold('Message: ')}{message.content}"),
                 colour=await ctx.embed_colour(),
-                timestamp=ctx.message.created_at
+                timestamp=ctx.message.created_at,
             )
-            embed.add_field(name="Author Details", value=f"{message.author} ({message.author.id})")
+            embed.add_field(
+                name="Author Details", value=f"{message.author} ({message.author.id})"
+            )
             await channel.send(embed=embed)

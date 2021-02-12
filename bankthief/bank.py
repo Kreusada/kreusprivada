@@ -15,10 +15,7 @@ NOT_ACTIVE = (
     "You can check up on the status by using `[p]robset settings`."
 )
 
-LOSE = (
-    "- [p]rob\n"
-    "- [p]robstore crook"
-)
+LOSE = "- [p]rob\n" "- [p]robstore crook"
 
 STATS_CHECK = f"You can check your stats by using `[p]robstats`."
 
@@ -26,20 +23,19 @@ STATS_CHECK = f"You can check your stats by using `[p]robstats`."
 @cog_i18n(_)
 class BankThief(commands.Cog):
     """Rob other users."""
-    
+
     __author__ = ["Kreusada"]
     __version__ = "2.0.0"
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=5865146514315491, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=5865146514315491, force_registration=True
+        )
         self.config.register_guild(
             minimum=100, maximum=500, crookcost=300, disable=False
         )
-        self.config.register_user(
-            crooks=0, success=0,
-            notsuccess=0, almost=0
-        )
+        self.config.register_user(crooks=0, success=0, notsuccess=0, almost=0)
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -63,7 +59,7 @@ class BankThief(commands.Cog):
         msg = await ctx.send(
             f"Are you sure you would like to disable BankThief for {ctx.guild.name}?\n"
             f"Users will lost access to the following commands: {box(LOSE.replace('[p]', ctx.clean_prefix), lang='diff')}"
-            )
+        )
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         try:
@@ -76,7 +72,9 @@ class BankThief(commands.Cog):
         else:
             await msg.delete()
             await self.config.guild(ctx.guild).disable.set(True)
-            await ctx.send(f"BankThief is disabled. You can re-enable it by using `{ctx.clean_prefix}robset disable false`.")
+            await ctx.send(
+                f"BankThief is disabled. You can re-enable it by using `{ctx.clean_prefix}robset disable false`."
+            )
 
     @robset.command()
     @commands.cooldown(1, 100, commands.BucketType.user)
@@ -113,7 +111,9 @@ class BankThief(commands.Cog):
             f"Minimum rob amount: {min}\n"
             f"Disabled: {disabled}"
         )
-        await ctx.send(f"{box(text=f'[Settings for {ctx.guild.name}]', lang='ini')}{box(text, lang='yaml')}")
+        await ctx.send(
+            f"{box(text=f'[Settings for {ctx.guild.name}]', lang='ini')}{box(text, lang='yaml')}"
+        )
 
     @commands.command()
     @commands.guild_only()
@@ -121,12 +121,14 @@ class BankThief(commands.Cog):
         """Purchase a crook to rob someone's bank account."""
         if await self.config.guild(ctx.guild).disable() is False:
             crookcost = await self.config.guild(ctx.guild).crookcost()
-            pred = await self.confirm(ctx, 'crook', crookcost)
+            pred = await self.confirm(ctx, "crook", crookcost)
         else:
-            await ctx.send(NOT_ACTIVE.replace('[p]', ctx.clean_prefix))
+            await ctx.send(NOT_ACTIVE.replace("[p]", ctx.clean_prefix))
 
     async def confirm(self, ctx, type: str, cost: int):
-        msg = await ctx.send(f"Please confirm that you would like to purchase a {type} for {cost}.")
+        msg = await ctx.send(
+            f"Please confirm that you would like to purchase a {type} for {cost}."
+        )
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
         try:
@@ -141,10 +143,13 @@ class BankThief(commands.Cog):
                 await msg.delete()
                 await bank.withdraw_credits(ctx.author, cost)
                 crooks = await self.config.user(ctx.author).crooks()
-                crooks += 1; await self.config.user(ctx.author).crooks.set(crooks)
+                crooks += 1
+                await self.config.user(ctx.author).crooks.set(crooks)
                 await ctx.send(f"Done. A {type} was successfully purchased for {cost}.")
             except ValueError:
-                await ctx.send(f"You do not have enough cash! A crook costs {cost}, you have {await bank.get_balance(ctx.author)}.")
+                await ctx.send(
+                    f"You do not have enough cash! A crook costs {cost}, you have {await bank.get_balance(ctx.author)}."
+                )
 
     @commands.command()
     @commands.guild_only()
@@ -156,41 +161,52 @@ class BankThief(commands.Cog):
             no = await self.config.user(ctx.author).notsuccess()
             almost = await self.config.user(ctx.author).almost()
             if crook == 0:
-                return await ctx.send(f"You do not have a crook to rob {user.name}. Perhaps buy one using `{ctx.clean_prefix}crook`.")
-            rob = randint(await self.config.guild(ctx.guild).minimum(), await self.config.guild(ctx.guild).maximum())
+                return await ctx.send(
+                    f"You do not have a crook to rob {user.name}. Perhaps buy one using `{ctx.clean_prefix}crook`."
+                )
+            rob = randint(
+                await self.config.guild(ctx.guild).minimum(),
+                await self.config.guild(ctx.guild).maximum(),
+            )
             chance = randint(1, 10)
             if rob > await bank.get_balance(user):
                 await ctx.send(f"Sorry, {user.name} is broke enough as it is.")
             else:
                 if chance <= 3:
-                    crook -= 1; await self.config.user(ctx.author).crooks.set(crook)
-                    success += 1; await self.config.user(ctx.author).success.set(success)
+                    crook -= 1
+                    await self.config.user(ctx.author).crooks.set(crook)
+                    success += 1
+                    await self.config.user(ctx.author).success.set(success)
                     await ctx.send(
                         f"{ctx.author.name} **exceeds** in robbing {user.name}'s bank account.\n"
                         f"**+{int(rob)}** has been added to your bank account.\n"
                         f"One crook has been removed from your account. You now have **{crook}** crooks.\n{STATS_CHECK.replace('[p]', ctx.clean_prefix)}"
-                        )
+                    )
                     await bank.deposit_credits(ctx.author, int(rob))
                     await bank.withdraw_credits(user, int(rob))
                 elif chance >= 7:
-                    crook -= 1; await self.config.user(ctx.author).crooks.set(crook)
-                    no += 1; await self.config.user(ctx.author).notsuccess.set(no)
+                    crook -= 1
+                    await self.config.user(ctx.author).crooks.set(crook)
+                    no += 1
+                    await self.config.user(ctx.author).notsuccess.set(no)
                     await ctx.send(
                         f"{ctx.author.name} **fails** in robbing {user.name}'s bank account.\n"
                         f"One crook has been removed from your account. You now have **{crook}** crooks.\n{STATS_CHECK.replace('[p]', ctx.clean_prefix)}"
                     )
                 else:
-                    crook -= 1; await self.config.user(ctx.author).crooks.set(crook)
-                    almost += 1; await self.config.user(ctx.author).almost.set(almost)
+                    crook -= 1
+                    await self.config.user(ctx.author).crooks.set(crook)
+                    almost += 1
+                    await self.config.user(ctx.author).almost.set(almost)
                     await ctx.send(
                         f"{ctx.author.name} **almost exceeds** in robbing {user.name}'s bank account.\n"
                         f"**+{round(int(rob)/2)}** has been added to your bank account. That is half of what you were expecting.\n"
                         f"One crook has been removed from your account. You now have **{crook}** crooks.\n{STATS_CHECK.replace('[p]', ctx.clean_prefix)}"
                     )
-                    await bank.deposit_credits(ctx.author, round(int(rob)/2))
-                    await bank.withdraw_credits(user, round(int(rob)/2))
+                    await bank.deposit_credits(ctx.author, round(int(rob) / 2))
+                    await bank.withdraw_credits(user, round(int(rob) / 2))
         else:
-            await ctx.send(NOT_ACTIVE.replace('[p]', ctx.clean_prefix))
+            await ctx.send(NOT_ACTIVE.replace("[p]", ctx.clean_prefix))
 
     @commands.command()
     @commands.guild_only()
@@ -226,7 +242,6 @@ class BankThief(commands.Cog):
             f"Unsuccessful robberies: {n}\n"
             f"Close robberies: {a}\n"
         )
-        await ctx.send(f"{box(text=f'[Stats for {person.name} in {ctx.guild.name}]', lang='ini')}{box(text, lang='yaml')}")
-
-
-
+        await ctx.send(
+            f"{box(text=f'[Stats for {person.name} in {ctx.guild.name}]', lang='ini')}{box(text, lang='yaml')}"
+        )

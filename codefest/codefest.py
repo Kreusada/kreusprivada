@@ -6,6 +6,7 @@ from redbot.core.utils.chat_formatting import error, box
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.menus import start_adding_reactions
 
+
 class Codefest(commands.Cog):
     """Host coding challenges in your guild!"""
 
@@ -15,19 +16,17 @@ class Codefest(commands.Cog):
         self.config.register_guild(
             leaders=[],
             ongoing=None,
-            announce_channel=None, 
+            announce_channel=None,
             submit_channel=None,
             inbox_channel=None,
-            )
-        self.config.register_member(
-            submitted=False
         )
+        self.config.register_member(submitted=False)
         self.no_events = "There are no codefest events running."
         self.is_event = "Current codefest event:\n - {event}"
         self.already_event = "There is already a codefest event running:\n - {event}"
-        self.lang = 'yaml'
+        self.lang = "yaml"
 
-    @commands.group(aliases=['cf'])
+    @commands.group(aliases=["cf"])
     async def codefest(self, ctx):
         """Commands with CodeFest."""
 
@@ -46,7 +45,7 @@ class Codefest(commands.Cog):
         leaders = await self.config.guild(ctx.guild).leaders()
         leaders.append(member.id)
         await self.config.guild(ctx.guild).leaders.set(leaders)
-        await ctx.send(f'{member.name} was added as a codefest leader.')
+        await ctx.send(f"{member.name} was added as a codefest leader.")
 
     @leaders.command(name="list")
     async def _list(self, ctx):
@@ -55,13 +54,10 @@ class Codefest(commands.Cog):
         if not len(leaders):
             description = "There are no codefest leaders."
         else:
-            description = ', '.join(self.bot.get_user(u).name for u in leaders)
-        embed = discord.Embed(
-            description=description,
-            colour=await ctx.embed_colour()
-        )
+            description = ", ".join(self.bot.get_user(u).name for u in leaders)
+        embed = discord.Embed(description=description, colour=await ctx.embed_colour())
         await ctx.send(embed=embed)
-    
+
     @leaders.command()
     async def clear(self, ctx):
         """Clear the leaders list."""
@@ -93,13 +89,31 @@ class Codefest(commands.Cog):
     @channel.command()
     async def show(self, ctx):
         """Show the current channels used for codefest."""
-        announce_channel = self.bot.get_channel(await self.config.guild(ctx.guild).announce_channel())
-        submit_channel = self.bot.get_channel(await self.config.guild(ctx.guild).submit_channel())
-        inbox_channel = self.bot.get_channel(await self.config.guild(ctx.guild).inbox_channel())
+        announce_channel = self.bot.get_channel(
+            await self.config.guild(ctx.guild).announce_channel()
+        )
+        submit_channel = self.bot.get_channel(
+            await self.config.guild(ctx.guild).submit_channel()
+        )
+        inbox_channel = self.bot.get_channel(
+            await self.config.guild(ctx.guild).inbox_channel()
+        )
         embed = discord.Embed(color=await ctx.embed_colour())
-        embed.add_field(name="Announce channel", value=announce_channel.mention if announce_channel else 'None', inline=False)
-        embed.add_field(name="Submission channel", value=submit_channel.mention if submit_channel else 'None', inline=False)
-        embed.add_field(name="Inbox channel", value=inbox_channel.mention if inbox_channel else 'None', inline=False)
+        embed.add_field(
+            name="Announce channel",
+            value=announce_channel.mention if announce_channel else "None",
+            inline=False,
+        )
+        embed.add_field(
+            name="Submission channel",
+            value=submit_channel.mention if submit_channel else "None",
+            inline=False,
+        )
+        embed.add_field(
+            name="Inbox channel",
+            value=inbox_channel.mention if inbox_channel else "None",
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
     @codefest.command()
@@ -107,7 +121,9 @@ class Codefest(commands.Cog):
         """View the current codefest event."""
         ongoing = await self.config.guild(ctx.guild).ongoing()
         if ongoing:
-            await ctx.send(box(text=self.is_event.format(event=ongoing), lang=self.lang))
+            await ctx.send(
+                box(text=self.is_event.format(event=ongoing), lang=self.lang)
+            )
         else:
             await ctx.send(self.no_events)
 
@@ -117,15 +133,33 @@ class Codefest(commands.Cog):
         leaders = await self.config.guild(ctx.guild).leaders()
         ongoing = await self.config.guild(ctx.guild).ongoing()
         if ctx.author.id not in leaders:
-            return await ctx.send(error("You aren't authorized to run codefest events yet. Sorry!"))
+            return await ctx.send(
+                error("You aren't authorized to run codefest events yet. Sorry!")
+            )
         if not await self.config.guild(ctx.guild).announce_channel():
-            return await ctx.send(error(f"Required setup missing: `announce_channel`. Use `{ctx.clean_prefix}codefest channel announce`."))
+            return await ctx.send(
+                error(
+                    f"Required setup missing: `announce_channel`. Use `{ctx.clean_prefix}codefest channel announce`."
+                )
+            )
         if not await self.config.guild(ctx.guild).submit_channel():
-            return await ctx.send(error(f"Required setup missing: `submit_channel`. Use `{ctx.clean_prefix}codefest channel submit`."))
+            return await ctx.send(
+                error(
+                    f"Required setup missing: `submit_channel`. Use `{ctx.clean_prefix}codefest channel submit`."
+                )
+            )
         if not await self.config.guild(ctx.guild).inbox_channel():
-            return await ctx.send(error(f"Required setup missing: `receive_inbox`. Use `{ctx.clean_prefix}codefest channel inbox`."))
+            return await ctx.send(
+                error(
+                    f"Required setup missing: `receive_inbox`. Use `{ctx.clean_prefix}codefest channel inbox`."
+                )
+            )
         if ongoing:
-            return await ctx.send(box(text=error(self.already_event.format(event=ongoing)), lang=self.lang))
+            return await ctx.send(
+                box(
+                    text=error(self.already_event.format(event=ongoing)), lang=self.lang
+                )
+            )
         await ctx.send(f"Please answer these few questions {ctx.author.display_name}.")
 
         def check(x):
@@ -138,7 +172,9 @@ class Codefest(commands.Cog):
                 await ctx.send("Your title must be under 30 characters.")
         except asyncio.TimeoutError:
             return await ctx.send("You took too long to answer, please start over.")
-        await ctx.send("Give a detailed description for this event so your participants understand. Be sure to include any examples.")
+        await ctx.send(
+            "Give a detailed description for this event so your participants understand. Be sure to include any examples."
+        )
         try:
             description = await self.bot.wait_for("message", timeout=200, check=check)
             if len(description.content) > 30:
@@ -152,13 +188,17 @@ class Codefest(commands.Cog):
             return await ctx.send("You took too long to answer, please start over.")
         await ctx.send("All done!")
         embed = discord.Embed(
-            title=title.content, 
+            title=title.content,
             description=f"A new codefest event was started by {ctx.author.display_name}!",
-            colour=await ctx.embed_colour()
-            )
+            colour=await ctx.embed_colour(),
+        )
         embed.add_field(name="Description", value=description.content, inline=False)
-        embed.add_field(name="How to participate", value=upload_type.content, inline=False)
-        announce_channel = self.bot.get_channel(await self.config.guild(ctx.guild).announce_channel())
+        embed.add_field(
+            name="How to participate", value=upload_type.content, inline=False
+        )
+        announce_channel = self.bot.get_channel(
+            await self.config.guild(ctx.guild).announce_channel()
+        )
         await self.config.guild(ctx.guild).ongoing.set(title.content)
         for x in ctx.guild.members:
             await self.config.member(x).clear()
@@ -173,12 +213,18 @@ class Codefest(commands.Cog):
         await self.end_codefest_event(ctx, ongoing)
 
     async def end_codefest_event(self, ctx, event: str):
-        msg = await ctx.send(f"Are you sure you want to end the following event: {event}?")
+        msg = await ctx.send(
+            f"Are you sure you want to end the following event: {event}?"
+        )
         pred = ReactionPredicate.yes_or_no(msg, ctx.author)
         start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
 
         def digit(x):
-            return x.author == ctx.author and x.channel == ctx.channel and x.content.isdigit()
+            return (
+                x.author == ctx.author
+                and x.channel == ctx.channel
+                and x.content.isdigit()
+            )
 
         def check(x):
             return x.author == ctx.author and x.channel == ctx.channel
@@ -190,28 +236,50 @@ class Codefest(commands.Cog):
         if not pred.result:
             return await ctx.send("Okay, the event shall continue.")
         else:
-            await ctx.send("Please specify the user's ID that you selected as the winner.")
+            await ctx.send(
+                "Please specify the user's ID that you selected as the winner."
+            )
             try:
                 win = await self.bot.wait_for("message", check=digit, timeout=30)
                 winner = ctx.guild.get_member(int(win.content))
                 if winner:
-                    await ctx.send(f"{winner.display_name} has been selected as the winner.")
+                    await ctx.send(
+                        f"{winner.display_name} has been selected as the winner."
+                    )
                 else:
-                    return await ctx.send(f"Could not find a member with the ID `{win.content}`. Please start over.")
+                    return await ctx.send(
+                        f"Could not find a member with the ID `{win.content}`. Please start over."
+                    )
             except asyncio.TimeoutError:
-                return await ctx.send("You took too long to specify a winner. Please restart the session.")
-            await ctx.send("Could you provide some additional notes/details, runner ups, or special mentions? Go ahead.")
+                return await ctx.send(
+                    "You took too long to specify a winner. Please restart the session."
+                )
+            await ctx.send(
+                "Could you provide some additional notes/details, runner ups, or special mentions? Go ahead."
+            )
             try:
                 detail = await self.bot.wait_for("message", check=check, timeout=300)
                 if len(detail.content) > 1500:
-                    return await ctx.send(f"The maximum character limit is 1500, you typed {len(detail.content)}. Please start over.")
+                    return await ctx.send(
+                        f"The maximum character limit is 1500, you typed {len(detail.content)}. Please start over."
+                    )
             except asyncio.TimeoutError:
-                await ctx.send("I assume there were no additional details, lets announce our winner!")
-            announce_channel = self.bot.get_channel(await self.config.guild(ctx.guild).announce_channel())
-            await ctx.send(f"All done! This has been posted to {announce_channel.mention}.")
-            embed = discord.Embed(title=f"The {event} event has ended!", color=await ctx.embed_colour())
+                await ctx.send(
+                    "I assume there were no additional details, lets announce our winner!"
+                )
+            announce_channel = self.bot.get_channel(
+                await self.config.guild(ctx.guild).announce_channel()
+            )
+            await ctx.send(
+                f"All done! This has been posted to {announce_channel.mention}."
+            )
+            embed = discord.Embed(
+                title=f"The {event} event has ended!", color=await ctx.embed_colour()
+            )
             embed.add_field(name="Winner", value=winner.name, inline=False)
-            embed.add_field(name="Additional information", value=detail.content, inline=False)
+            embed.add_field(
+                name="Additional information", value=detail.content, inline=False
+            )
             embed.set_footer(text="Thanks for participating!")
             await announce_channel.send(embed=embed)
             await self.config.guild(ctx.guild).ongoing.set(False)
@@ -219,7 +287,9 @@ class Codefest(commands.Cog):
     @commands.Cog.listener()
     async def on_message_without_command(self, message):
         ctx = await self.bot.get_context(message)
-        inbox_channel = self.bot.get_channel(await self.config.guild(message.guild).inbox_channel())
+        inbox_channel = self.bot.get_channel(
+            await self.config.guild(message.guild).inbox_channel()
+        )
         submit_channel = await self.config.guild(message.guild).submit_channel()
         ongoing = await self.config.guild(message.guild).ongoing()
         submitted = await self.config.member(message.author).submitted()
@@ -235,11 +305,13 @@ class Codefest(commands.Cog):
             return
         embed = discord.Embed(
             title=f"{message.author.name} has submitted for a codefest event!",
-            colour=await ctx.embed_colour()
+            colour=await ctx.embed_colour(),
         )
         embed.add_field(name="Event Name", value=ongoing, inline=False)
         embed.add_field(name="Submission Content", value=message.content, inline=False)
         await inbox_channel.send(embed=embed)
         await message.delete()
-        await message.channel.send(f"Thanks for submitting {message.author.mention}!", delete_after=3)
+        await message.channel.send(
+            f"Thanks for submitting {message.author.mention}!", delete_after=3
+        )
         await self.config.member(message.author).submitted.set(True)
