@@ -97,7 +97,7 @@ class ModMail(commands.Cog):
     @modmail.command()
     async def reply(self, ctx, user: discord.User, *, message: str):
         """Reply to a user."""
-        if not str(ctx.author) in await self.config.mods():
+        if not ctx.author.id in await self.config.mods():
             await ctx.send(error(text="You are not authorized to use this command."))
         else:
             if await ctx.embed_requested():
@@ -128,10 +128,10 @@ class ModMail(commands.Cog):
     async def mod_add(self, ctx, user: discord.User):
         """Add a user as a modmail correspondent."""
         mods = await self.config.mods()
-        if user in mods:
+        if user.id in mods:
             await ctx.send(f"{user} is already a modmail correspondent.")
         else:
-            mods.append(str(user))
+            mods.append(user.id)
             await self.config.mods.set(mods)
             await ctx.send(f"{user} was added as a modmail correspondent.")
 
@@ -140,8 +140,8 @@ class ModMail(commands.Cog):
     async def mod_del(self, ctx, user: discord.User):
         """Remove a user as a modmail correspondent."""
         mods = await self.config.mods()
-        if str(user) in mods:
-            mods.remove(str(user))
+        if user.id in mods:
+            mods.remove(user.id)
             await self.config.mods.set(mods)
             await ctx.send(f"{user} was removed as a modmail correspondent.")
         else:
@@ -154,7 +154,7 @@ class ModMail(commands.Cog):
         if len(mods) == 0:
             await ctx.send(f"There are no modmail correspondents.")
         else:
-            description = ", ".join(x for x in mods)
+            description = ", ".join(bot.get_user(u).name for u in mods)
             if await ctx.embed_requested():
                 embed = discord.Embed(
                     title=f"{mod} ModMail Correspondents",
@@ -169,7 +169,7 @@ class ModMail(commands.Cog):
     async def blacklist(self, ctx):
         """Blacklist users."""
 
-    @blacklist.command()
+    @blacklist.command(name="add")
     @commands.is_owner()
     async def black_add(self, ctx, user: discord.User):
         """Add a user to the blacklist."""
