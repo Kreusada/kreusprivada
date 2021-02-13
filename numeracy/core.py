@@ -74,7 +74,7 @@ class Numeracy(
                 f"Total time spent answering: {self.total(average_time)}s"
             )
         else:
-            timing = ''
+            timing = ""
         return await ctx.send(
             box(
                 text=(

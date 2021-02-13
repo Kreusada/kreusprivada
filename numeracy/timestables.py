@@ -122,19 +122,25 @@ class TimesTables(MixinMeta):
                 answer = await self.bot.wait_for(
                     "message", timeout=timeout, check=check
                 )
-                if answer.content == str(F*S):
+                if answer.content == str(F * S):
+                    time_end = self.time()
                     await answer.add_reaction(self.correct)
                     if time_taken:
                         await ctx.send(
-                            f"{random.choice(self.session_quotes)}! This question took you {round(self.time() - time_start,2)} seconds."
+                            f"{random.choice(self.session_quotes)}! This question took you {round(time_end - time_start,2)} seconds."
                         )
                     correct_answers.append(correct_answers[-1] + 1)
                     if time_taken:
-                        average_time.append(round(self.time() - time_start,2))
+                        average_time.append(round(time_end - time_start, 2))
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")
                     return await self.tt_build_stats(
-                        ctx, correct_answers, incorrect_answers, inactive_counter, average_time if time_taken else None, True
+                        ctx,
+                        correct_answers,
+                        incorrect_answers,
+                        inactive_counter,
+                        average_time if time_taken else None,
+                        True,
                     )
                     break
                 else:
@@ -153,5 +159,10 @@ class TimesTables(MixinMeta):
                 )
 
         await self.tt_build_stats(
-            ctx, correct_answers, incorrect_answers, inactive_counter, average_time if time_taken else None, False
+            ctx,
+            correct_answers,
+            incorrect_answers,
+            inactive_counter,
+            average_time if time_taken else None,
+            False,
         )
