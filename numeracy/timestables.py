@@ -6,12 +6,6 @@ from redbot.core.utils.chat_formatting import bold, box
 
 from .meta import MixinMeta
 
-session_expire_quotes = ["Great work", "Amazing", "Awesome work", "Nice stuff"]
-
-how_to_exit_early = (
-    "Remember, you can type `exit()` or `stop()` at any time to quit the session."
-)
-
 
 class TimesTables(MixinMeta):
     pass
@@ -45,17 +39,17 @@ class TimesTables(MixinMeta):
         for i in range(number_of_questions):
             F = random.randint(1, 12)
             S = random.randint(1, 12)
-            async with ctx.typing():
-                await asyncio.sleep(sleep)
             await ctx.send(f"{bold(f'{F} x {S}')}?")
 
             try:
+                time_start = self.start_timer()
                 answer = await self.bot.wait_for(
                     "message", timeout=timeout, check=check
                 )
                 inactive_counter.clear()
                 if answer.content == str(F * S):
                     await answer.add_reaction("✅")
+                    await ctx.send(f"This question took you {round(self.stop_timer() - time_start)} seconds.")
                     correct_answers.append(correct_answers[-1] + 1)
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")
@@ -67,6 +61,8 @@ class TimesTables(MixinMeta):
                     await answer.add_reaction("❌")
                     await ctx.send(f"Not quite! The answer was {bold(str(F*S))}.")
                     incorrect_answers.append(incorrect_answers[-1] + 1)
+                async with ctx.typing():
+                    await asyncio.sleep(sleep)
             except asyncio.TimeoutError:
                 inactive_counter.append(inactive_counter[-1] + 1)
                 if inactive_counter[-1] == inactive:

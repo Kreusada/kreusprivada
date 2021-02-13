@@ -1,6 +1,7 @@
 import abc
-import discord
+import time
 import random
+import discord
 
 from typing import Literal
 from redbot.core import commands, Config, i18n
@@ -13,8 +14,6 @@ T_ = i18n.Translator("Numeracy", __file__)
 
 class CompositeMetaClass(type(commands.Cog), type(abc.ABC)):
     """Thanks Trusty!"""
-
-    pass
 
 
 @i18n.cog_i18n(T_)
@@ -43,6 +42,12 @@ class Numeracy(
             tt_timeout=10,
             tt_sleep=2,
         )
+
+    def start_timer(self):
+        return time.perf_counter()
+
+    def stop_timer(self):
+        return time.perf_counter()
 
     async def tt_build_stats(
         self, ctx, correct, incorrect, inactive, exited_early: bool
