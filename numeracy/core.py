@@ -41,6 +41,7 @@ class Numeracy(
             tt_inactive=3,
             tt_timeout=10,
             tt_sleep=2,
+            tt_time_taken=False
         )
 
     def time(self):

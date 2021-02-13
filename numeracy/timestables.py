@@ -16,12 +16,83 @@ class TimesTables(MixinMeta):
         pass
 
     @tt.command()
+    async def inactive(self, ctx, questions: int):
+        """
+        Set the number of questions unanswered before the session is closed.
+        """
+        if questions <= 2:
+            return await ctx.send("Must be more than 2.")
+        elif questions >= 10:
+            return await ctx.send("Must be less than 10.")
+        await self.config.guild(ctx.guild).tt_inactive.set(questions)
+        await ctx.tick()
+
+    @tt.command()
+    async def timeout(self, ctx, seconds: int):
+        """
+        Set the number of seconds before a question times out.
+        """
+        if seconds <= 3:
+            return await ctx.send("Must be more than 3.")
+        elif seconds >= 50:
+            return await ctx.send("Must be less than 50.")
+        await self.config.guild(ctx.guild).tt_timeout.set(seconds)
+        await ctx.tick()
+
+    @tt.command()
+    async def sleep(self, ctx, seconds: int):
+        """
+        Set the number of seconds between each question.
+        """
+        if seconds >= 8:
+            return await ctx.send("Must be less than 8.")
+        elif seconds <= 0:
+            return await ctx.send("Must be a positive number.")
+        await self.config.guild(ctx.guild).tt_timeout.set(seconds)
+        await ctx.tick()
+
+    @tt.command()
+    async def time(self, ctx):
+        """
+        Toggle whether the command displays the time taken.
+
+        Defaults to False.
+        """
+        time = await self.config.guild(ctx.guild).tt_time_taken()
+        inactive = await self.config.guild(ctx.guild).tt_inactive()
+        timeout = await self.config.guild(ctx.guild).tt_timeout()
+        sleep = await self.config.guild(ctx.guild).tt_sleep()
+        embed = discord.Embed(
+            title=f"Settings for {ctx.guild.name}",
+            description=(
+                f"Time toggled: {'Yes' if time else 'No'}\n"
+                f"Inactive count: {inactive} questions\n"
+                f"Timeout per question: {timeout}s"
+                f"Time between questions: {sleep}s"
+            ),
+            color=await ctx.embed_colour()
+        )
+        await ctx.send(embed=embed)
+
+        await self.config.guild(ctx.guild).tt_time_taken.set(True if not time else False)
+        verb = "enabled" if not time else "disabled"
+        await ctx.send(f"Time has been {verb}.")
+
+    @tt.command()
+    async def settings(self, ctx):
+        """
+        Shows the current settings for times tables.
+        """
+        time = await self.config.guild(ctx.guild).tt_time_taken()
+
+    @tt.command()
     async def start(self, ctx, number_of_questions: int):
         """Start a timestables session."""
 
         inactive = await self.config.guild(ctx.guild).tt_inactive()
         timeout = await self.config.guild(ctx.guild).tt_timeout()
         sleep = await self.config.guild(ctx.guild).tt_sleep()
+        time_taken = await self.config.guild(ctx.guild).tt_time_taken()
 
         if number_of_questions > 20:
             return await ctx.send("Sorry, you cannot have more than 20 questions.")
@@ -32,9 +103,9 @@ class TimesTables(MixinMeta):
         def check(x):
             return x.author == ctx.author and x.channel == ctx.channel
 
-        inactive_counter = [0]
         correct_answers = [0]
         incorrect_answers = [0]
+        inactive_counter = [0]
 
         for i in range(number_of_questions):
             F = random.randint(1, 12)
@@ -42,14 +113,15 @@ class TimesTables(MixinMeta):
             await ctx.send(f"{bold(f'{F} x {S}')}?")
 
             try:
-                time_start = self.time()
+                if time_taken:
+                    time_start = self.time()
                 answer = await self.bot.wait_for(
                     "message", timeout=timeout, check=check
                 )
-                inactive_counter.clear()
                 if answer.content == str(F * S):
                     await answer.add_reaction("✅")
-                    await ctx.send(f"This question took you {round(self.time() - time_start)} seconds.")
+                    if time_taken:
+                        await ctx.send(f"This question took you {round(self.time() - time_start,2)} seconds.")
                     correct_answers.append(correct_answers[-1] + 1)
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")
