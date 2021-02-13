@@ -1,9 +1,10 @@
 import abc
 import time
 import random
+import typing
 import discord
+import asyncio
 
-from typing import Literal
 from redbot.core import commands, Config, i18n
 from redbot.core.utils.chat_formatting import box, bold
 
@@ -11,9 +12,7 @@ T_ = i18n.Translator("Numeracy", __file__)
 
 
 @i18n.cog_i18n(T_)
-class TimesTables(
-    commands.Cog,
-):
+class TimesTables(commands.Cog):
     """Games and tools with numbers."""
 
     __version__ = "1.1.1"
@@ -145,7 +144,6 @@ class TimesTables(
     async def _time(self, ctx):
         """
         Toggle whether the command displays the time taken.
-
         Defaults to False.
         """
         time = await self.config.guild(ctx.guild).tt_time_taken()
