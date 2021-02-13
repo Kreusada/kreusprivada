@@ -43,10 +43,7 @@ class Numeracy(
             tt_sleep=2,
         )
 
-    def start_timer(self):
-        return time.perf_counter()
-
-    def stop_timer(self):
+    def time(self):
         return time.perf_counter()
 
     async def tt_build_stats(

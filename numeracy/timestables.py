@@ -42,14 +42,14 @@ class TimesTables(MixinMeta):
             await ctx.send(f"{bold(f'{F} x {S}')}?")
 
             try:
-                time_start = self.start_timer()
+                time_start = self.time()
                 answer = await self.bot.wait_for(
                     "message", timeout=timeout, check=check
                 )
                 inactive_counter.clear()
                 if answer.content == str(F * S):
                     await answer.add_reaction("✅")
-                    await ctx.send(f"This question took you {round(self.stop_timer() - time_start)} seconds.")
+                    await ctx.send(f"This question took you {round(self.time() - time_start)} seconds.")
                     correct_answers.append(correct_answers[-1] + 1)
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")
