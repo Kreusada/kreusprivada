@@ -1,5 +1,6 @@
 import random
 import asyncio
+import discord
 
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import bold, box
@@ -52,11 +53,9 @@ class TimesTables(MixinMeta):
         await ctx.tick()
 
     @tt.command()
-    async def time(self, ctx):
+    async def settings(self, ctx):
         """
-        Toggle whether the command displays the time taken.
-
-        Defaults to False.
+        Shows the current settings for times tables.
         """
         time = await self.config.guild(ctx.guild).tt_time_taken()
         inactive = await self.config.guild(ctx.guild).tt_inactive()
@@ -67,23 +66,26 @@ class TimesTables(MixinMeta):
             description=(
                 f"Time toggled: {'Yes' if time else 'No'}\n"
                 f"Inactive count: {inactive} questions\n"
-                f"Timeout per question: {timeout}s"
+                f"Timeout per question: {timeout}s\n"
                 f"Time between questions: {sleep}s"
             ),
-            color=await ctx.embed_colour()
+            color=await ctx.embed_colour(),
         )
         await ctx.send(embed=embed)
 
-        await self.config.guild(ctx.guild).tt_time_taken.set(True if not time else False)
-        verb = "enabled" if not time else "disabled"
-        await ctx.send(f"Time has been {verb}.")
-
-    @tt.command()
-    async def settings(self, ctx):
+    @tt.command(name="time")
+    async def _time(self, ctx):
         """
-        Shows the current settings for times tables.
+        Toggle whether the command displays the time taken.
+
+        Defaults to False.
         """
         time = await self.config.guild(ctx.guild).tt_time_taken()
+        await self.config.guild(ctx.guild).tt_time_taken.set(
+            True if not time else False
+        )
+        verb = "enabled" if not time else "disabled"
+        await ctx.send(f"Time has been {verb}.")
 
     @tt.command()
     async def start(self, ctx, number_of_questions: int):
@@ -121,7 +123,9 @@ class TimesTables(MixinMeta):
                 if answer.content == str(F * S):
                     await answer.add_reaction("✅")
                     if time_taken:
-                        await ctx.send(f"This question took you {round(self.time() - time_start,2)} seconds.")
+                        await ctx.send(
+                            f"{random.choice(self.session_quotes)}! This question took you {round(self.time() - time_start,2)} seconds."
+                        )
                     correct_answers.append(correct_answers[-1] + 1)
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")

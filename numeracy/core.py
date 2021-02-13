@@ -29,7 +29,7 @@ class Numeracy(
 
     def __init__(self, bot):
         self.bot = bot
-        self.session_expire_quotes = [
+        self.session_quotes = [
             "Great work",
             "Amazing",
             "Awesome work",
@@ -38,10 +38,7 @@ class Numeracy(
         self.how_to_exit_early = "Remember, you can type `exit()` or `stop()` at any time to quit the session."
         self.config = Config.get_conf(self, 2345987543534, force_registration=True)
         self.config.register_guild(
-            tt_inactive=3,
-            tt_timeout=10,
-            tt_sleep=2,
-            tt_time_taken=False
+            tt_inactive=3, tt_timeout=10, tt_sleep=2, tt_time_taken=False
         )
 
     def time(self):
@@ -51,7 +48,9 @@ class Numeracy(
         self, ctx, correct, incorrect, inactive, exited_early: bool
     ):
         msg = (
-            (f"{random.choice(self.session_expire_quotes)} {ctx.author.name}!")
+            (
+                f"{random.choice(self.session_quotes)} {ctx.author.name}! The session has ended."
+            )
             if not exited_early
             else f"You exited early, {ctx.author.name}."
         )
