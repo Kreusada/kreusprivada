@@ -106,9 +106,9 @@ class TimesTables(MixinMeta):
         def check(x):
             return x.author == ctx.author and x.channel == ctx.channel
 
-        correct_answers = [0]
-        incorrect_answers = [0]
-        inactive_counter = [0]
+        correct_answers = 0
+        incorrect_answers = 0
+        inactive_counter = 0
         average_time = []
 
         for i in range(number_of_questions):
@@ -129,7 +129,7 @@ class TimesTables(MixinMeta):
                         await ctx.send(
                             f"{random.choice(self.session_quotes)}! This question took you {round(time_end - time_start,2)} seconds."
                         )
-                    correct_answers.append(correct_answers[-1] + 1)
+                    correct_answers += 1
                     if time_taken:
                         average_time.append(round(time_end - time_start, 2))
                 elif answer.content.lower() in {"exit()", "stop()"}:
@@ -146,12 +146,12 @@ class TimesTables(MixinMeta):
                 else:
                     await answer.add_reaction(self.incorrect)
                     await ctx.send(f"Not quite! The answer was {bold(str(F*S))}.")
-                    incorrect_answers.append(incorrect_answers[-1] + 1)
+                    incorrect_answers += 1
                 async with ctx.typing():
                     await asyncio.sleep(sleep)
             except asyncio.TimeoutError:
-                inactive_counter.append(inactive_counter[-1] + 1)
-                if inactive_counter[-1] == inactive:
+                inactive_counter += 1
+                if inactive_counter == inactive:
                     return await ctx.send("Session ended due to inactivity.")
                     break
                 await ctx.send(

@@ -78,9 +78,9 @@ class Numeracy(
         return await ctx.send(
             box(
                 text=(
-                    f"{msg}\n\nCorrect: {str(correct[-1])}\n"
-                    f"Incorrect: {str(incorrect[-1])}\n"
-                    f"Unanswered: {str(inactive[-1])}"
+                    f"{msg}\n\nCorrect: {str(correct)}\n"
+                    f"Incorrect: {str(incorrect)}\n"
+                    f"Unanswered: {str(inactive)}"
                     f"{timing}"
                 ),
                 lang="yml",
