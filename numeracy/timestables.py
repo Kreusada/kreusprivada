@@ -101,6 +101,7 @@ class TimesTables(MixinMeta):
         await ctx.send(
             f"Starting timestable session with {number_of_questions} questions...\n{self.how_to_exit_early}"
         )
+        await asyncio.sleep(3)
 
         def check(x):
             return x.author == ctx.author and x.channel == ctx.channel
@@ -108,6 +109,7 @@ class TimesTables(MixinMeta):
         correct_answers = [0]
         incorrect_answers = [0]
         inactive_counter = [0]
+        average_time = []
 
         for i in range(number_of_questions):
             F = random.randint(1, 12)
@@ -127,10 +129,12 @@ class TimesTables(MixinMeta):
                             f"{random.choice(self.session_quotes)}! This question took you {round(self.time() - time_start,2)} seconds."
                         )
                     correct_answers.append(correct_answers[-1] + 1)
+                    if time_taken:
+                        average_time.append(round(self.time() - time_start,2))
                 elif answer.content.lower() in {"exit()", "stop()"}:
                     await ctx.send("Session ended.")
                     return await self.tt_build_stats(
-                        ctx, correct_answers, incorrect_answers, inactive_counter, True
+                        ctx, correct_answers, incorrect_answers, inactive_counter, average_time if time_taken else None, True
                     )
                     break
                 else:
@@ -149,5 +153,5 @@ class TimesTables(MixinMeta):
                 )
 
         await self.tt_build_stats(
-            ctx, correct_answers, incorrect_answers, inactive_counter, False
+            ctx, correct_answers, incorrect_answers, inactive_counter, average_time if time_taken else None, False
         )

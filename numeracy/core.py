@@ -46,8 +46,20 @@ class Numeracy(
     def time(self):
         return time.perf_counter()
 
+    def average(self, times):
+        try:
+            return round(sum(times) / len(times), 2)
+        except ZeroDivisionError:
+            return 0
+
+    def total(self, times):
+        try:
+            return round(sum(times), 2)
+        except ZeroDivisionError:
+            return 0
+
     async def tt_build_stats(
-        self, ctx, correct, incorrect, inactive, exited_early: bool
+        self, ctx, correct, incorrect, inactive, average_time, exited_early: bool
     ):
         msg = (
             (
@@ -56,12 +68,20 @@ class Numeracy(
             if not exited_early
             else f"You exited early, {ctx.author.name}."
         )
+        if average_time:
+            timing = (
+                f"\n\nAverage time per question: {self.average(average_time)}s\n"
+                f"Total time spent answering: {self.total(average_time)}s"
+            )
+        else:
+            timing = ''
         return await ctx.send(
             box(
                 text=(
                     f"{msg}\n\nCorrect: {str(correct[-1])}\n"
                     f"Incorrect: {str(incorrect[-1])}\n"
                     f"Unanswered: {str(inactive[-1])}"
+                    f"{timing}"
                 ),
                 lang="yml",
             )
