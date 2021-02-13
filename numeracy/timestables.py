@@ -120,8 +120,8 @@ class TimesTables(MixinMeta):
                 answer = await self.bot.wait_for(
                     "message", timeout=timeout, check=check
                 )
-                if answer.content == str(F * S):
-                    await answer.add_reaction("✅")
+                if answer.content == str(F*S):
+                    await answer.add_reaction(self.correct)
                     if time_taken:
                         await ctx.send(
                             f"{random.choice(self.session_quotes)}! This question took you {round(self.time() - time_start,2)} seconds."
@@ -134,7 +134,7 @@ class TimesTables(MixinMeta):
                     )
                     break
                 else:
-                    await answer.add_reaction("❌")
+                    await answer.add_reaction(self.incorrect)
                     await ctx.send(f"Not quite! The answer was {bold(str(F*S))}.")
                     incorrect_answers.append(incorrect_answers[-1] + 1)
                 async with ctx.typing():

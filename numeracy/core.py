@@ -29,6 +29,8 @@ class Numeracy(
 
     def __init__(self, bot):
         self.bot = bot
+        self.correct = "\N{WHITE HEAVY CHECK MARK}"
+        self.incorrect = "\N{CROSS MARK}"
         self.session_quotes = [
             "Great work",
             "Amazing",
