@@ -7,6 +7,7 @@ class AppendBackslash(commands.Cog):
 
     @commands.command(name="abs")
     async def _abs(self, ctx, text: str):
+        """Add a backslash to the start of a string."""
         await ctx.send(f"\\{text}")
 
 
